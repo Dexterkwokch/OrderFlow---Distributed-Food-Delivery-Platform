@@ -1,0 +1,15 @@
+.DS_Store
+target/
+.idea/
+.vscode/
+*.iml
+*.log
+
+# Local environment files
+.env
+.env.*
+
+# Frontend/build outputs for later phases
+node_modules/
+dist/
+build/

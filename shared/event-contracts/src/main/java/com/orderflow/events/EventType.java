@@ -1,0 +1,13 @@
+package com.orderflow.events;
+
+public enum EventType {
+    ORDER_CREATED,
+    RESTAURANT_ACCEPTED,
+    RESTAURANT_REJECTED,
+    FOOD_PREPARING,
+    FOOD_READY,
+    DELIVERY_REQUESTED,
+    DRIVER_ASSIGNED,
+    ORDER_PICKED_UP,
+    ORDER_DELIVERED
+}

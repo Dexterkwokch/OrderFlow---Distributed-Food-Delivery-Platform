@@ -1,0 +1,31 @@
+server:
+  port: ${SERVER_PORT:8082}
+
+spring:
+  application:
+    name: restaurant-service
+  datasource:
+    url: ${RESTAURANT_DB_URL:jdbc:postgresql://localhost:5432/orderflow_restaurants}
+    username: ${RESTAURANT_DB_USERNAME:orderflow}
+    password: ${RESTAURANT_DB_PASSWORD:orderflow}
+  jpa:
+    hibernate:
+      ddl-auto: validate
+    open-in-view: false
+  flyway:
+    enabled: true
+  rabbitmq:
+    host: ${RABBITMQ_HOST:localhost}
+    port: ${RABBITMQ_PORT:5672}
+    username: ${RABBITMQ_USERNAME:guest}
+    password: ${RABBITMQ_PASSWORD:guest}
+
+management:
+  endpoints:
+    web:
+      exposure:
+        include: health,info
+
+springdoc:
+  swagger-ui:
+    path: /swagger-ui.html

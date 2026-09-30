@@ -1,0 +1,831 @@
+OrderFlow — Distributed Food Delivery Platform
+
+1. Project Overview
+
+OrderFlow is a full-stack food delivery web application inspired by platforms such as Deliveroo and Uber Eats.
+
+The project allows customers to browse restaurants, order food, and track their order status in real time. Restaurants can receive and manage orders, while drivers can accept deliveries and update delivery progress.
+
+The main purpose of the project is not simply to build another food-ordering website. The backend will use a distributed, event-driven architecture to demonstrate software engineering concepts such as microservices, message queues, asynchronous communication, concurrency, failure recovery, retries, idempotency, and real-time communication.
+
+The final project should therefore demonstrate both:
+
+1. A polished, understandable web application.
+2. A technically interesting distributed backend system.
+
+2. Main Users
+
+Customer
+
+Customers should be able to:
+
+* Browse restaurants.
+* View restaurant menus.
+* Add food to a basket.
+* Place an order.
+* View their previous/current orders.
+* Track the current order status.
+* Receive real-time status updates.
+
+Example order status:
+
+Order confirmed → Restaurant accepted → Preparing → Driver assigned → Ready → Picked up → On the way → Delivered
+
+Restaurant
+
+Restaurants should be able to:
+
+* View incoming orders.
+* Accept or reject an order.
+* Mark an order as preparing.
+* Mark an order as ready for collection.
+* View active orders.
+
+Driver
+
+Drivers should be able to:
+
+* View available delivery jobs.
+* Accept a delivery.
+* View pickup and delivery information.
+* Mark an order as picked up.
+* Mark an order as delivered.
+
+3. Example User Flow
+
+A customer opens the website and selects a restaurant.
+
+The customer chooses food and adds it to their basket.
+
+For example:
+
+2 × Chicken Burger
+1 × Fries
+1 × Coke
+
+The customer places the order.
+
+The Order Service creates the order with a status such as:
+
+PENDING
+
+The system publishes an OrderCreated event.
+
+The Restaurant Service receives the event and displays the new order to the restaurant.
+
+The restaurant accepts the order.
+
+The system publishes a RestaurantAccepted event.
+
+The order status changes to:
+
+PREPARING
+
+The Delivery Service creates a delivery request.
+
+A driver accepts the delivery.
+
+The system publishes a DriverAssigned event.
+
+The restaurant finishes preparing the food and marks it as ready.
+
+The driver collects the food.
+
+The status becomes:
+
+PICKED_UP
+
+The driver delivers the food.
+
+The final status becomes:
+
+DELIVERED
+
+Throughout this process, the customer’s browser receives real-time updates.
+
+4. Proposed Technology Stack
+
+Frontend
+
+* React
+* TypeScript
+* Tailwind CSS
+
+Backend
+
+* Java 21
+* Spring Boot
+* Spring Web — REST APIs
+* Spring Data JPA — database access
+* Spring Validation — request validation
+* Spring Security — authentication and authorization
+
+Database
+
+* PostgreSQL
+
+Each backend service will manage its own application data rather than relying on services directly accessing each other’s data.
+
+Message Broker
+
+* RabbitMQ
+* Spring AMQP
+
+RabbitMQ will provide asynchronous communication between backend services.
+
+Example events include:
+
+* OrderCreated
+* RestaurantAccepted
+* RestaurantRejected
+* FoodPreparing
+* FoodReady
+* DeliveryRequested
+* DriverAssigned
+* OrderPickedUp
+* OrderDelivered
+
+Real-Time Communication
+
+* Spring WebSocket
+* WebSockets
+
+WebSockets will push order-status changes to the React frontend without requiring the customer to refresh the page.
+
+Backend Services
+
+The initial distributed backend will contain three main Spring Boot services:
+
+1. Order Service
+2. Restaurant Service
+3. Delivery Service
+
+Each service will be an independently running Spring Boot application with clearly separated responsibilities.
+
+Infrastructure
+
+* Docker
+* Docker Compose
+
+Docker Compose will run the complete local system, including:
+
+* React frontend
+* Order Service
+* Restaurant Service
+* Delivery Service
+* RabbitMQ
+* PostgreSQL
+* Worker instances where required
+
+Testing
+
+* JUnit 5
+* Mockito
+* Spring Boot Test
+* Testcontainers
+
+Testcontainers can be used for integration testing with real PostgreSQL and RabbitMQ containers.
+
+API Documentation
+
+* OpenAPI
+* Swagger UI
+
+Each service should provide documented REST APIs.
+
+Database Migration
+
+* Flyway
+
+Flyway will manage database schema changes so that the database can be recreated consistently.
+
+Build Tool
+
+* Maven
+
+Optional Later Additions
+
+These should not be required for the initial version:
+
+* Redis — caching and temporary distributed data
+* Prometheus — metrics
+* Grafana — monitoring dashboards
+* Kubernetes — deployment/orchestration experiment after the Docker version is complete
+
+Final Core Stack
+
+React + TypeScript + Tailwind CSS
+
+↓
+
+Java 21 + Spring Boot
+
+↓
+
+PostgreSQL
+
+↓
+
+RabbitMQ + Spring AMQP
+
+↓
+
+Spring WebSocket
+
+↓
+
+Docker + Docker Compose
+
+Testing:
+
+JUnit + Mockito + Spring Boot Test + Testcontainers
+
+Database migrations:
+
+Flyway
+
+API documentation:
+
+OpenAPI / Swagger
+
+5. High-Level Architecture
+
+The frontend communicates with an API Gateway/backend API.
+
+The backend is separated into several services.
+
+Main services:
+
+1. Order Service
+2. Restaurant Service
+3. Delivery Service
+
+The services communicate asynchronously using RabbitMQ.
+
+Basic architecture:
+
+Customer / Restaurant / Driver
+
+↓
+
+React Frontend
+
+↓
+
+API Gateway
+
+↓
+
+Order Service
+Restaurant Service
+Delivery Service
+
+↓
+
+RabbitMQ
+
+↓
+
+Background Workers
+
+↓
+
+PostgreSQL
+
+6. Why Use Distributed Architecture?
+
+A simple version of this application could use:
+
+React → FastAPI → PostgreSQL
+
+However, that would mostly demonstrate normal full-stack CRUD development.
+
+OrderFlow instead separates important responsibilities into independent services.
+
+For example:
+
+The Order Service manages orders.
+
+The Restaurant Service manages restaurant operations.
+
+The Delivery Service manages drivers and deliveries.
+
+Instead of directly calling every other service, services can communicate through events using RabbitMQ.
+
+This creates realistic distributed-system problems that the project can solve.
+
+7. Event-Driven Architecture
+
+An important part of the project is communication through events.
+
+Example events:
+
+OrderCreated
+
+RestaurantAccepted
+
+RestaurantRejected
+
+FoodPreparing
+
+FoodReady
+
+DeliveryRequested
+
+DriverAssigned
+
+OrderPickedUp
+
+OrderDelivered
+
+For example:
+
+Customer places order
+
+↓
+
+Order Service creates order
+
+↓
+
+OrderCreated event
+
+↓
+
+RabbitMQ
+
+↓
+
+Restaurant Service receives event
+
+↓
+
+Restaurant accepts order
+
+↓
+
+RestaurantAccepted event
+
+↓
+
+Delivery Service receives event
+
+↓
+
+Delivery created
+
+8. Distributed Systems Concepts
+
+The project should demonstrate several important distributed-systems concepts.
+
+Message Queues
+
+RabbitMQ will allow services to communicate asynchronously.
+
+A service does not always need to wait for another service to finish its work.
+
+Failure Recovery
+
+Services should be able to temporarily fail without destroying the entire order process.
+
+Example:
+
+The Order Service publishes an OrderCreated event.
+
+The Delivery Service is temporarily unavailable.
+
+The message should not simply disappear.
+
+RabbitMQ keeps or requeues the message.
+
+When the Delivery Service becomes available again, it processes the pending message.
+
+Retries
+
+Some operations may temporarily fail.
+
+The system should retry appropriate operations instead of immediately marking them as permanently failed.
+
+A retry limit should prevent infinite retry loops.
+
+Dead-Letter Queue
+
+Messages that repeatedly fail should eventually be moved to a dead-letter queue.
+
+This prevents broken messages from continuously blocking or disrupting normal processing.
+
+Idempotency
+
+Message brokers can sometimes deliver the same message more than once.
+
+For example:
+
+OrderCreated #9281
+
+OrderCreated #9281
+
+The Delivery Service must not accidentally create two deliveries.
+
+Consumers should therefore be idempotent.
+
+Before processing an event, the service can check whether that event has already been processed.
+
+Eventual Consistency
+
+Different services may not contain exactly the same state at exactly the same moment.
+
+For example, the Order Service may know that a restaurant accepted an order slightly before the Delivery Service receives the corresponding event.
+
+The project can demonstrate how distributed systems handle this temporary inconsistency.
+
+Concurrency
+
+Multiple customers may place orders simultaneously.
+
+Multiple drivers may also attempt to accept the same delivery.
+
+The system must prevent race conditions such as two drivers being assigned to one delivery.
+
+Horizontal Scaling
+
+Multiple worker instances can process messages.
+
+For example:
+
+Worker 1
+Worker 2
+Worker 3
+
+Jobs/events can be distributed between them.
+
+This demonstrates how additional workers can increase processing capacity.
+
+9. Real-Time Order Tracking
+
+Customers should not need to refresh the page repeatedly.
+
+The backend should push status changes to the frontend using WebSockets or Server-Sent Events.
+
+For example:
+
+Order confirmed ✓
+
+Restaurant accepted ✓
+
+Preparing ✓
+
+Driver assigned ✓
+
+Picked up
+
+Delivered
+
+When the restaurant or driver changes the order status, the customer’s page should update automatically.
+
+10. Failure Demonstration
+
+One of the most important parts of the project should be demonstrating that the distributed architecture actually works.
+
+Example experiment:
+
+1. Start the complete system.
+2. Place an order.
+3. Stop the Delivery Service.
+4. Let the restaurant accept the order.
+5. The DeliveryRequested event cannot currently be processed.
+6. Restart the Delivery Service.
+7. The pending event is processed.
+8. A delivery is created successfully.
+9. The customer’s order continues normally.
+
+Another experiment could deliberately send the same event twice.
+
+The system should prove that idempotency prevents duplicate deliveries.
+
+These demonstrations make the distributed-systems features visible rather than simply claiming that the project uses microservices.
+
+11. Development Phases
+
+Phase 1 — Basic Full-Stack Application
+
+Build the normal website first.
+
+Implement:
+
+* React frontend.
+* Restaurant list.
+* Restaurant menu.
+* Shopping basket.
+* Place order.
+* PostgreSQL database.
+* Basic FastAPI backend.
+* Order history.
+* Basic restaurant dashboard.
+
+Goal:
+
+A customer should be able to place a complete food order.
+
+Phase 2 — Separate Backend Services
+
+Separate the backend into:
+
+* Order Service.
+* Restaurant Service.
+* Delivery Service.
+
+Clearly define the responsibility of each service.
+
+Goal:
+
+Move from a normal monolithic backend toward a distributed architecture.
+
+Phase 3 — RabbitMQ and Events
+
+Introduce RabbitMQ.
+
+Implement important events such as:
+
+* OrderCreated.
+* RestaurantAccepted.
+* FoodReady.
+* DeliveryRequested.
+* DriverAssigned.
+* OrderPickedUp.
+* OrderDelivered.
+
+Goal:
+
+Services should communicate asynchronously rather than being tightly coupled.
+
+Phase 4 — Real-Time Updates
+
+Add WebSockets or SSE.
+
+When the order changes state, update the customer’s browser automatically.
+
+Goal:
+
+Make the distributed backend visible through the actual user experience.
+
+Phase 5 — Reliability
+
+Implement:
+
+* Message acknowledgements.
+* Retry logic.
+* Retry limits.
+* Dead-letter queues.
+* Idempotent consumers.
+* Duplicate-event protection.
+* Service failure recovery.
+* Concurrent processing.
+* Protection against race conditions.
+
+Goal:
+
+Turn the project from a basic microservices application into a genuine distributed-systems project.
+
+Phase 6 — Scaling
+
+Run multiple worker instances.
+
+For example:
+
+Worker 1
+Worker 2
+Worker 3
+
+Send many orders simultaneously and observe how work is distributed.
+
+Goal:
+
+Demonstrate horizontal scaling and concurrent processing.
+
+Phase 7 — Docker and Deployment
+
+Dockerize the services.
+
+Create a Docker Compose configuration that can start:
+
+* Frontend.
+* Order Service.
+* Restaurant Service.
+* Delivery Service.
+* RabbitMQ.
+* PostgreSQL.
+* Workers.
+
+Goal:
+
+Someone cloning the repository should be able to start the entire system easily.
+
+Phase 8 — Testing and Observability
+
+Add:
+
+* Unit tests.
+* Integration tests.
+* API tests.
+* Distributed failure tests.
+* Structured logging.
+* Health-check endpoints.
+
+Possible additional features:
+
+* Prometheus.
+* Grafana.
+* Redis caching.
+
+Goal:
+
+Make the system easier to understand, test, debug, and demonstrate.
+
+12. What Not to Build
+
+The project should remain manageable.
+
+It does not need:
+
+* Real payment processing.
+* Real restaurants.
+* Real drivers.
+* A real delivery business.
+* Advanced GPS tracking.
+* A mobile application.
+* Complex recommendation algorithms.
+* Ten or more microservices.
+* Kubernetes at the beginning.
+
+Driver movement can be simulated.
+
+Restaurant/menu data can also be seeded.
+
+The technical depth of the backend is more important than recreating every feature of Deliveroo.
+
+13. Final Demo
+
+The final demonstration should ideally use three browser windows.
+
+Window 1: Customer
+
+Window 2: Restaurant
+
+Window 3: Driver
+
+Example demonstration:
+
+Customer places order.
+
+↓
+
+Restaurant immediately receives order.
+
+↓
+
+Restaurant accepts order.
+
+↓
+
+Customer sees “Restaurant Accepted”.
+
+↓
+
+Driver receives available delivery.
+
+↓
+
+Driver accepts delivery.
+
+↓
+
+Customer sees “Driver Assigned”.
+
+↓
+
+Restaurant marks food ready.
+
+↓
+
+Driver marks order picked up.
+
+↓
+
+Customer sees “On the Way”.
+
+↓
+
+Driver marks delivered.
+
+↓
+
+Customer sees “Delivered”.
+
+Then demonstrate distributed failure handling:
+
+Place another order.
+
+↓
+
+Stop Delivery Service.
+
+↓
+
+Continue processing the order.
+
+↓
+
+Restart Delivery Service.
+
+↓
+
+Pending message is automatically processed.
+
+↓
+
+Order continues successfully.
+
+14. README Requirements
+
+The GitHub README should explain:
+
+* What OrderFlow is.
+* Why it was built.
+* Technology stack.
+* Architecture diagram.
+* How each service works.
+* Database design.
+* Event flow.
+* RabbitMQ configuration.
+* Reliability mechanisms.
+* Idempotency.
+* Retry strategy.
+* Dead-letter queues.
+* Concurrency handling.
+* Real-time communication.
+* How to run the project.
+* How to reproduce a service failure.
+* How the system recovers.
+
+Include screenshots or a short GIF/video showing the application working.
+
+15. What This Project Demonstrates
+
+The finished project should demonstrate:
+
+Frontend development:
+
+* React.
+* TypeScript.
+* Responsive UI.
+* State management.
+* Real-time updates.
+
+Backend development:
+
+* FastAPI.
+* REST APIs.
+* Database design.
+* Authentication if added.
+* Validation.
+* API architecture.
+
+Distributed systems:
+
+* Microservices.
+* Message queues.
+* Event-driven architecture.
+* Asynchronous processing.
+* Failure recovery.
+* Retry mechanisms.
+* Dead-letter queues.
+* Idempotency.
+* Eventual consistency.
+* Concurrency.
+* Race-condition handling.
+* Horizontal scaling.
+
+Software engineering:
+
+* Docker.
+* Git.
+* Testing.
+* Logging.
+* System design.
+* Documentation.
+
+16. Main Project Goal
+
+The goal is not to build a complete Deliveroo clone.
+
+The goal is to build a realistic food-delivery product that provides an understandable interface for demonstrating deeper backend engineering.
+
+A recruiter should be able to open the project and immediately understand:
+
+“This is a working food-delivery application.”
+
+A software engineer should be able to examine the architecture and see:
+
+“This student understands APIs, messaging, asynchronous systems, service failures, retries, concurrency, idempotency, and distributed-system design.”
+
+The project should therefore prioritise technical depth, reliability, and clear demonstration over having a very large number of features.

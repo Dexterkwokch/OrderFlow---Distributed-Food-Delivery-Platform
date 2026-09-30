@@ -1,0 +1,31 @@
+server:
+  port: ${SERVER_PORT:8083}
+
+spring:
+  application:
+    name: delivery-service
+  datasource:
+    url: ${DELIVERY_DB_URL:jdbc:postgresql://localhost:5432/orderflow_deliveries}
+    username: ${DELIVERY_DB_USERNAME:orderflow}
+    password: ${DELIVERY_DB_PASSWORD:orderflow}
+  jpa:
+    hibernate:
+      ddl-auto: validate
+    open-in-view: false
+  flyway:
+    enabled: true
+  rabbitmq:
+    host: ${RABBITMQ_HOST:localhost}
+    port: ${RABBITMQ_PORT:5672}
+    username: ${RABBITMQ_USERNAME:guest}
+    password: ${RABBITMQ_PASSWORD:guest}
+
+management:
+  endpoints:
+    web:
+      exposure:
+        include: health,info
+
+springdoc:
+  swagger-ui:
+    path: /swagger-ui.html
